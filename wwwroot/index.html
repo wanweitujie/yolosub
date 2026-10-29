@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .box {
+            border: 1px solid #333;
+            border-radius: 6px;
+            margin-top: 10px;
+            padding: 10px;
+        }
+
+        .form {
+            user-select: none;
+        }
+
+        .btns {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+            user-select: none;
+        }
+
+        .btns a {
+            border: 1px darkorange solid;
+            background-color: chocolate;
+            padding: 0 20px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            line-height: 0;
+        }
+
+        .btns a:hover {
+            opacity: 0.9;
+        }
+
+        .btns a.disabled {
+            pointer-events: none;
+        }
+
+        .result {
+            margin-top: 20px;
+            border: 1px solid #333;
+            padding-bottom: 3px;
+            max-width: 1294px;
+        }
+
+        .result:empty {
+            display: none;
+        }
+
+        .result .item {
+            border: 1px solid blue;
+            margin: 3px;
+        }
+
+        .text {
+            border: 1px solid #333;
+            margin: 3px;
+            box-sizing: border-box;
+            white-space: break-spaces;
+            word-break: break-all;
+            height: 360px;
+            overflow: hidden;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 16px;
+        }
+
+        canvas {
+            width: 100%;
+            aspect-ratio: 1280/720;
+            max-width: 1280px;
+            margin: 3px 3px 0;
+        }
+
+        canvas.st2 {
+            max-width: 720px;
+        }
+
+        .models dd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .models dd.on {
+            color: red;
+        }
+
+        .models dd.on>span::before {
+            content: "[当前]";
+        }
+
+        .models dd>span {
+            pointer-events: none;
+        }
+
+
+        .export .option {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .export .option-wrap {
+            flex-wrap: wrap;
+
+        }
+
+        .export .name {
+            width: 80px;
+            text-align: right;
+            padding-right: 10px;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+
+        .export .line {
+            flex-basis: 100%;
+            height: 10px;
+        }
+
+        .export label {
+            margin-right: 20px;
+            white-space: nowrap;
+        }
+
+        .export .btn {
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            background: #333;
+            border-radius: 4px;
+            color: #fff;
+            margin-top: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+
+        .export .btn:hover {
+            opacity: 0.92;
+        }
+
+        .train .trainBtns {
+            border-bottom: #333 1px solid;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+        }
+
+        .train .trainBtns>div {
+            display: none;
+        }
+
+        .train .trainBtns.starting>div.stop,
+        .train .trainBtns.running>div.stop,
+        .train .trainBtns.idle>div.start,
+        .train .trainBtns.finished>div.start,
+        .train .trainBtns.stopped>div.start,
+        .train .trainBtns.error>div.start,
+        .train .trainBtns.unknown>div.start {
+            display: block;
+        }
+
+        .train .trainStatusRefresh {
+            width: 86px;
+            display: inline-flex;
+        }
+
+        /* 模型识别测试区参数配置行 */
+        .detect .option {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .detect .option label {
+            margin-right: 20px;
+            white-space: nowrap;
+        }
+
+        .detect .option input {
+            width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box export">
+        <h4>模型转换测试</h4>
+        <div class="option">
+            <div class="name">转换类型: </div>
+            <div class="option option-wrap">
+                <label><input checked type="radio" name="export_upload_format" value="mlmodel">coreml(.mlmodel,v5)</label><label><input checked type="radio" name="export_upload_format" value="mlpackage">coreml(.mlpackage,v8/v11)</label><label><input checked type="radio" name="export_upload_format" value="mlpackage-ios14">coreml(.mlmodel,v8/v11,ios14支持)</label>
+                <div class="line"></div><label><input type="radio" name="export_upload_format" value="ncnn-standard">ncnn(标准版)</label><label><input type="radio" name="export_upload_format" value="ncnn">ncnn(简化版)</label>
+                <div class="line"></div><label><input type="radio" name="export_upload_format" value="onnx">onnx</label><label><input type="radio" name="export_upload_format" value="torchscript">torchscript</label>
+            </div>
+        </div>
+        <div class="option">
+            <div class="name">version: </div><label><input type="radio" name="export_upload_version" value="v5">v5</label><label><input checked type="radio" name="export_upload_version" value="v8">v8</label><label><input type="radio" name="export_upload_version" value="v11">v11</label>
+        </div>
+        <div class="option">
+            <div class="name">imgsz: </div><input type="text" name="export_upload_imgsz" value="640">
+        </div>
+        <div class="option">
+            <div class="name">NMS: </div><label><input type="checkbox" checked name="export_upload_nms" value="1">nms(对于coreml 必选,否则转换后的apple无法使用)</label>
+        </div>
+        <div class="option">
+            <div class="name">精度: </div><label><input type="radio" checked name="export_upload_accuracy" value="fp32">默认(FP32)</label><label><input type="radio" name="export_upload_accuracy" value="half">half(FP16)</label><label><input type="radio" name="export_upload_accuracy" value="int8">int8</label>
+        </div>
+        <div class="option">
+            <div class="name">模型文件: </div><input id="export_upload_file" type="file" accept=".pt" id="">
+        </div>
+        <div class="option">
+            <div class="name">&nbsp;</div>
+            <div class="btn" id="export_upload_submit">开始转换</div>
+            <div><a href="javascript:;" id="export_upload_link" target="_blank" rel="noopener noreferrer"></a></div>
+        </div>
+    </div>
+    <div class="box detect">
+        <h4>模型识别测试</h4>
+        <div class="form">
+            <div><input type="file" name="file" id="file" accept="image/*" multiple /></div>
+            <div class="option">
+                <label>conf: <input type="number" id="conf" step="0.01" min="0" max="1" value="0.25"></label>
+                <label>iou: <input type="number" id="iou" step="0.01" min="0" max="1" value="0.7"></label>
+                <label>imgsz: <input type="number" id="imgsz" min="32" step="32" value="640"></label>
+            </div>
+        </div>
+        <div class="btns"><a href="javascript:;" id="btnSubmit">提交检测</a></div>
+        <dl class="models" id="models">
+            <dt>已创建模型实例(<select id="modelSelect"></select><a href="javascript:;" id="createModel">新建</a>)</dt>
+        </dl>
+        <div class="result" id="result"></div>
+    </div>
+    <div class="box train">
+        <h4>模型训练（多卡并行：每卡 1 个训练 + 1 个 CPU 槽）</h4>
+        <div class="form">
+            <div class="option">
+                <label>版本: <select id="trainVersion"><option value="v5">v5</option><option value="v8" selected>v8</option><option value="v11">v11</option></select></label>
+                <label>模型: <input type="text" id="trainModel" value="yolov8n.pt" style="width:110px"></label>
+                <label>epochs: <input type="number" id="trainEpochs" min="1" value="10" style="width:60px"></label>
+                <label>batch: <input type="number" id="trainBatch" value="16" style="width:60px"></label>
+                <label>imgsz: <input type="number" id="trainImgsz" step="32" value="640" style="width:70px"></label>
+                <label>显卡: <select id="trainDevice"><option value="">自动</option><option value="cpu">CPU</option></select></label>
+                <!-- AMP 复选:仅 v8/v11 生效(v5 无该参数,manager 已忽略);默认勾选对齐后端默认
+                     amp:true(AMP 是 ultralytics 官方默认训练行为),取消勾选显式传 amp:false 关闭 FP16 -->
+                <label>AMP(FP16): <input type="checkbox" id="trainAmp" checked title="混合精度训练,Ada 卡可显著提速;取消勾选可关闭(排查 FP32 行为时);v5 不适用"></label>
+            </div>
+            <div class="option">
+                <label>data.yaml: <input type="text" id="trainData" value="/docker-data-yolo/train_data/coco128/coco128.yaml" style="width:420px"></label>
+                <!-- 默认值沿用旧"常规训练"面板;COCO128 经预设按钮一键填充,保持既有 UI 行为 -->
+            </div>
+        </div>
+        <div class="btns">
+            <a href="javascript:;" id="trainStart">开始训练</a> | <a href="javascript:;" id="trainPresetCoco128">COCO128 预设</a> | <a href="javascript:;" id="trainStatusRefresh">刷新状态</a>
+        </div>
+        <div class="status" id="trainGpuOverview"></div>
+        <dl class="models" id="trainList"></dl>
+    </div>
+    <script>
+        //转换
+        (() => {
+            let exporting = false;
+            const setExporting = value => {
+                if (value === exporting) return;
+                exporting = value;
+                document.querySelector("#export_upload_submit").innerHTML = exporting ? '转换中请稍后' : '开始转换';
+            }
+            [...document.querySelectorAll("input[name='export_upload_format']")].forEach(ele => ele.addEventListener("click", (e) => {
+                let nms;
+                let nms_value;
+                const format = e.target.value;
+                switch (format) {
+                    case "ncnn":
+                    case "ncnn-standard":
+                        nms = document.querySelector("input[name='export_upload_nms']");
+                        nms_value = false;
+                        break;
+                    case "coreml": case "mlpackage": case "mlmodel": case "mlpackage-ios14":
+                        nms = document.querySelector("input[name='export_upload_nms']");
+                        nms_value = true;
+                        const ver = document.querySelector(`input[name='export_upload_version'][value='${format === "mlmodel" ? 'v5' : 'v8'}']`);
+                        if (ver) ver.checked = true;
+                        break;
+                    default:
+                        nms = document.querySelector("input[name='export_upload_nms']");
+                        nms_value = false;
+                        break;
+                }
+                if (nms) nms.checked = nms_value;
+                // int8 仅 CoreML(mlmodel/mlpackage/mlpackage-ios14)真实生效(convert.py/ultralytics coreml 量化);
+                // onnx/torchscript 服务端静默忽略,ncnn 服务端强制 int8=false —— 非 CoreML 一律置灰且切回 FP32,防误导。
+                const int8Supported = ["coreml", "mlmodel", "mlpackage", "mlpackage-ios14"].includes(format);
+                const int8Radio = document.querySelector("input[name='export_upload_accuracy'][value='int8']");
+                if (int8Radio) {
+                    int8Radio.disabled = !int8Supported;
+                    const int8Label = int8Radio.closest("label");
+                    if (int8Label) int8Label.style.opacity = int8Supported ? "" : "0.45";
+                    if (!int8Supported && int8Radio.checked) {
+                        const fp32 = document.querySelector("input[name='export_upload_accuracy'][value='fp32']");
+                        if (fp32) fp32.checked = true;
+                    }
+                }
+            }))
+            document.querySelector("#export_upload_submit").addEventListener("click", async () => {
+                if (exporting) return;
+                setExporting(true);
+                try {
+                    const btn_link = document.querySelector("#export_upload_link");
+                    if (btn_link) {
+                        btn_link.innerHTML = "";
+                        btn_link.href = "javascript:;";
+                    }
+                    const imgsz_str = document.querySelector("input[name='export_upload_imgsz']")?.value ?? "";
+                    let imgsz = +imgsz_str;
+                    if (isNaN(imgsz)) {
+                        try {
+                            imgsz = JSON.parse(imgsz_str);
+                            if (!Array.isArray(imgsz)) imgsz = undefined;
+                        } catch (error) {
+                            imgsz = undefined;
+                        }
+                    }
+                    const format = document.querySelector("input[name='export_upload_format']:checked")?.value;
+                    const version = document.querySelector("input[name='export_upload_version']:checked")?.value;
+                    const nms = document.querySelector("input[name='export_upload_nms']")?.checked ? true : false;
+                    const accuracy = document.querySelector("input[name='export_upload_accuracy']:checked")?.value;
+                    const half = accuracy === "half";
+                    const int8 = accuracy === "int8";
+                    /**@type {File}*/
+                    const file = document.querySelector("#export_upload_file").files?.[0];
+                    if (!format) return alert("请选择转换类型");
+                    if (!file || file.size > 200 * 1024 * 1024) return alert("文件大小超过了200MB");
+                    if (!file.name.endsWith(".pt")) return alert("仅支持提交pt文件");
+                    const formdata = new FormData();
+                    formdata.append("config", JSON.stringify({
+                        nms,
+                        half,
+                        int8,
+                        format,
+                        imgsz,
+                        version
+                    }));
+                    formdata.append("file", file);
+                    const res = await fetch("/export_model_upload", {
+                        method: "post",
+                        body: formdata
+                    });
+                    const res_data = await res.json();
+                    if (res.status !== 200 || !res_data?.success) throw res_data?.errMsg ?? `提交错误:${res.status}`;
+                    const url = res_data.data;
+                    if (btn_link) {
+                        btn_link.innerHTML = "下载转换后的文件";
+                        btn_link.href = url;
+                    }
+                    alert("转换成功");
+                } catch (error) {
+                    console.error(error);
+                    alert(error.toString());
+                }
+                finally {
+                    setExporting(false);
+                }
+            });
+        })();
+
+        //检测
+        (() => {
+            const yoloConfig = {};
+            let models = [];
+            let currentModel = null;
+            (() => {
+                //初始化模型列表
+                const yoloVersions = [
+                    { name: "ultralytics", value: ["yolo11l.pt", "yolo11m.pt", "yolo11n.pt", "yolo11s.pt", "yolo11x.pt", "yolo12l.pt", "yolo12m.pt", "yolo12n.pt", "yolo12s.pt", "yolo12x.pt", "yolo_nas_l.pt", "yolo_nas_m.pt", "yolo_nas_s.pt", "yolov10b.pt", "yolov10l.pt", "yolov10m.pt", "yolov10n.pt", "yolov10s.pt", "yolov10x.pt", "yolov5l6u.pt", "yolov5lu.pt", "yolov5m6u.pt", "yolov5mu.pt", "yolov5n6u.pt", "yolov5nu.pt", "yolov5s6u.pt", "yolov5su.pt", "yolov5x6u.pt", "yolov5xu.pt", "yolov8l.pt", "yolov8m.pt", "yolov8n.pt", "yolov8s.pt", "yolov8x.pt", "yolov8x6.pt", "yolov9c.pt", "yolov9e.pt", "yolov9m.pt", "yolov9s.pt", "yolov9t.pt"] },
+                    { name: "v5", value: ["yolov5l.pt", "yolov5l6.pt", "yolov5m.pt", "yolov5m6.pt", "yolov5n.pt", "yolov5n6.pt", "yolov5s.pt", "yolov5s6.pt", "yolov5x.pt", "yolov5x6.pt"] }
+                ]
+                const items = yoloVersions.reduce((total, { name, value }) => {
+                    const isV5 = name === "v5";
+                    value.forEach(model => {
+                        const model_name = `${isV5 ? '(v5)' : ''}${model}`;
+                        total.push({
+                            model_name: model_name,
+                            model_path: `/docker-data-yolo/models/${name}/${model}`,
+                            version: name
+                        });
+                    });
+                    return total;
+                }, []);
+                const ele = document.querySelector("#modelSelect");
+                const fra = document.createDocumentFragment();
+                items.forEach(item => {
+                    const option = document.createElement("option");
+                    option.text = item.model_name;
+                    option.value = JSON.stringify(item);
+                    fra.appendChild(option);
+                });
+                ele.appendChild(fra);
+            })();
+            function setResult(ele, text) {
+                ele.innerHTML = text.replace(/[<>]/gi, $0 => {
+                    return $0 === "<" ? "&lt;" : "&gt;";
+                }) || "没有返回值";
+                // ele.insertBefore(div, ele.firstElementChild || ele.firstChild);
+            }
+            async function getExistModels() {
+                const res = await fetch(`/gpu_status`, { method: "GET" });
+                let res_data = await res.json();
+                if (res.status !== 200 || !res_data?.success) throw res_data?.errMsg ?? `提交错误:${res.status}`;
+                const list = res_data.data.loaded_models?.map(item => {
+                    const { name, path } = item;
+                    return { name, path };
+                }) ?? [];
+                models = list;
+                return list;
+            }
+            function refreshModelHtml() {
+                const ele = document.querySelector("#models");
+                const dds = ele.querySelectorAll("dd");
+                dds.forEach(dd => dd.remove());
+                const fra = document.createDocumentFragment();
+                models.forEach(item => {
+                    const dd = document.createElement("dd");
+                    if (currentModel?.name === item.name) dd.classList.add("on");
+                    dd.dataset.model = item.name;
+                    dd.innerHTML = `<span>${item.name}(${item.path})</span><a href="javascript:;" class="btn-close">释放</a>`;
+                    fra.appendChild(dd);
+                });
+                ele.appendChild(fra);
+            }
+            getExistModels().then(refreshModelHtml);
+            document.querySelector("#models").addEventListener("click", async e => {
+                const { target } = e;
+                if (target.classList.contains("btn-close")) {
+                    //释放
+                    const model_name = target.parentNode.dataset.model;
+                    if (!model_name) return;
+                    try {
+                        const res = await fetch(`/close_model/${model_name}`, {
+                            method: "delete",
+                        });
+                        let res_data = await res.json();
+                        if (res.status !== 200 || !res_data?.success) throw res_data?.errMsg ?? `提交错误:${res.status}`;
+                        const index = models.findIndex(item => item.name === model_name);
+                        if (index !== -1) {
+                            const model = models.splice(index, 1)[0];
+                            if (model?.name === currentModel?.name) {
+                                currentModel = null;
+                            }
+                        }
+                        refreshModelHtml();
+                        alert("模型关闭成功");
+
+                    } catch (error) {
+                        alert(`接口请求失败:${error.toString()}`)
+                    }
+                } else if (target.tagName === "DD") {
+                    const model_name = target.dataset.model;
+                    if (!model_name) return;
+                    currentModel = models.find(item => item.name === model_name);
+                    if (currentModel) {
+                        refreshModelHtml();
+                    }
+                }
+            });
+            let creating = false;
+            document.getElementById("createModel").addEventListener("click", async () => {
+                if (creating) return;
+                creating = true;
+                try {
+                    let model;
+                    try {
+                        model = JSON.parse(modelSelect.value?.trim());
+                    } catch (error) {
+                        console.error(error);
+                        alert("请选择要创建的模型");
+                        return;
+                    }
+                    const { model_name, model_path, version } = model;
+                    try {
+                        let res = await fetch("/create_model", {
+                            method: "post",
+                            headers: { "content-type": "application/json" },
+                            body: JSON.stringify({
+                                model_name,
+                                model_path,
+                                version
+                            })
+                        });
+                        let res_data = await res.json();
+                        if (res.status !== 200 || !res_data?.success) throw res_data?.errMsg ?? `提交错误:${res.status}`;
+                        models.push({
+                            name: model_name,
+                            path: model_path,
+                            version
+                        });
+                        currentModel = models[models.length - 1];
+                        refreshModelHtml();
+                        alert("模型创建成功");
+                    } catch (error) {
+                        alert(`接口请求失败:${error.toString()}`)
+                    }
+                } finally {
+                    creating = false;
+                }
+            });
+            /**
+             *@return {Promise<Image>} 
+             **/
+            async function loadImage(file) {
+                return new Promise((resolve, reject) => {
+                    let img = new Image();
+                    let useBlob = typeof file !== "string";
+                    img.onload = e => {
+                        resolve(e.target);
+                        const url = e.target.src;
+                        if (useBlob && url) URL.revokeObjectURL(url);
+                    };
+                    img.onerror = (e) => {
+                        reject("img load error");
+                        const url = e.target.src;
+                        if (useBlob && url) URL.revokeObjectURL(url);
+                    }
+                    let url;
+                    try {
+                        url = useBlob ? URL.createObjectURL(file) : file;
+                        img.src = url;
+                        console.log("img", url);
+                    }
+                    catch {
+                        if (useBlob && url) URL.revokeObjectURL(url);
+                    }
+                });
+            }
+            /**
+             * @param {HTMLCanvasElement} canvas
+             * @param {{success:boolean, "data": Array<{box:{x1:number,y1:number,x2:number,y2:number},confidence:number,class:number,name:string}>}} res_data 
+             */
+            async function drawImage(canvas, img, res_data) {
+                const context = canvas.getContext("2d");
+                let { naturalWidth, naturalHeight } = img;
+                canvas.width = naturalWidth;
+                canvas.height = naturalHeight;
+                canvas.style.aspectRatio = naturalWidth / naturalHeight;
+                context.drawImage(img, 0, 0, naturalWidth, naturalHeight);
+                if (naturalWidth < naturalHeight) {
+                    canvas.classList.add("st2");
+                } else {
+                    canvas.classList.remove("st2");
+                }
+                if (!canvas.dataset.hideline) {
+                    const { data, success } = res_data;
+                    success && data?.forEach(({ box, confidence, class: cls, name }) => {
+                        const [x, y, w, h] = xyxyToXywh(box);
+                        context.strokeStyle = "green";
+                        context.font = "24px sans-serif ";
+                        context.textAlign = "start";
+                        context.textBaseline = "top";
+                        context.lineWidth = 3;
+                        context.strokeRect(x, y, w, h);
+                        context.fillStyle = "white";
+                        const text = `class:${cls},name:${name} , confidence:${confidence}`;
+                        context.fillText(text, x - 2, y - 2);
+                        context.fillStyle = "black";
+                        context.fillText(text, x, y);
+                    });
+                }
+            }
+            let task_id = 0;
+            /**@param {{x1:number,y1:number,x2:number,y2:number}} xyxy*/
+            function xyxyToXywh(xyxy) {
+                const x = Math.round(xyxy.x1);
+                const y = Math.round(xyxy.y1);
+                const w = Math.round(xyxy.x2 - xyxy.x1);
+                const h = Math.round(xyxy.y2 - xyxy.y1);
+                return [x, y, w, h];
+            }
+            async function predictionImg(model_name, file) {
+                let ele = document.createElement("div");
+                ele.className = "item";
+                let textEle = document.createElement("div");
+                textEle.className = "text";
+                setResult(textEle, "loading...");
+                ele.appendChild(textEle);
+                const box = document.querySelector("#result");
+                if (box.firstElementChild) {
+                    box.insertBefore(ele, box.firstElementChild);
+                } else {
+                    box.appendChild(ele);
+                }
+                try {
+                    const body = new FormData();
+                    body.append("file", file);
+                    // 推理参数: 与后端 InferenceConfig 默认值对齐 (conf 0.25 / iou 0.7 / imgsz 640)
+                    const options = {
+                        conf: +yoloConfig.conf,
+                        iou: +yoloConfig.iou,
+                        imgsz: +yoloConfig.imgsz || 640,
+                    };
+                    body.append("options", JSON.stringify(options));
+                    const res = await fetch(`/detect/${model_name}`, { method: "POST", body });
+                    let res_data = await res.json();
+                    if (res.status !== 200 || !res_data?.success) throw res_data?.errMsg ?? `提交错误:${res.status}`;
+                    setResult(textEle, JSON.stringify(res_data, null, 4));
+                    let canvas = document.createElement("canvas");
+                    ele.insertBefore(canvas, textEle);
+                    const img = await loadImage(file);
+                    drawImage(canvas, img, res_data);
+                    canvas.addEventListener("click", () => {
+                        canvas.dataset.hideline = canvas.dataset.hideline === "1" ? "" : "1";
+                        drawImage(canvas, img, res_data);
+                    });
+                } catch (error) {
+                    setResult(textEle, error.toString());
+                }
+            }
+            document.querySelector("#btnSubmit").addEventListener("click", async (e) => {
+                if (!currentModel) return alert("请先选择模型");
+                const { target } = e;
+                try {
+                    target.classList.add("disabled");
+                    target.innerHTML = "检测中...";
+                    const { files } = document.querySelector("#file");
+                    if (!files || files.length < 1) return alert("请先选择图片");
+                    const model_name = currentModel.name;
+                    await Promise.all([...files].map(file => predictionImg(model_name, file)));
+                } catch (error) {
+                    alert(`出现错误:${error.toString()}`);
+                }
+                finally {
+                    target.classList.remove("disabled");
+                    target.innerHTML = "提交检测";
+                }
+            });
+            //conf
+            (function () {
+                const configStorageKey = "yolov8_conf";
+                let config = localStorage.getItem(configStorageKey);
+                const defaultConfig = {
+                    conf: 0.25,
+                    iou: 0.7,
+                    imgsz: 640
+                };
+                const configKeys = Object.keys(defaultConfig);
+                if (config) {
+                    try {
+                        config = JSON.parse(config);
+                    } catch {
+                        config = undefined;
+                    }
+                }
+                if (config == null || typeof config != "object") {
+                    config = {}
+                    configKeys.forEach(key => {
+                        config[key] = defaultConfig[key];
+                    });
+                }
+                configKeys.forEach(key => {
+                    const input = document.querySelector(`#${key}`);
+                    const val = config[key] ?? defaultConfig[key];
+                    yoloConfig[key] = input.value = val ?? "";
+                    if (input.type === "checkbox") {
+                        input.checked = !!val;
+                    }
+                    input.addEventListener("input", e => {
+                        let target = e.target;
+                        let value = target.type === "checkbox" ? (target.checked ? 1 : 0) : target.type === "number" ? +target.value : target.value;
+                        if (isNaN(value) && typeof value !== "string") target.value = value = defaultConfig[key];
+                        yoloConfig[key] = value;
+                    });
+                });
+                document.querySelector("#btnSubmit").addEventListener("click", () => {
+                    const config = {};
+                    configKeys.forEach(key => {
+                        const target = document.querySelector(`#${key}`);
+                        let value = target.type === "checkbox" ? (target.checked ? 1 : 0) : target.type === "number" ? +target.value : target.value;
+                        if (isNaN(value) && typeof value !== "string") value = defaultConfig[key];
+                        yoloConfig[key] = config[key] = value;
+                    });
+                    localStorage.setItem(configStorageKey, JSON.stringify(config));
+                });
+            })();
+        })();
+
+        //训练
+        // 训练区:多训练列表 + 每卡状态(多卡并行,每卡1训练+1个CPU槽)
+        (() => {
+            const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br />");
+            let statusTimer = null;
+            const jsonFetch = async url => {
+                const res = await fetch(url);
+                const res_data = await res.json();
+                if (res.status !== 200 || !res_data?.success) throw res_data?.errMsg ?? `请求错误:${res.status}`;
+                return res_data.data;
+            };
+            // 完整卡列表缓存:30s 经 refreshDeviceOptions 刷新一次,概览渲染复用;
+            // 避免 2s 训练轮询连带打 /gpu_status(每次查询都触发一次 nvidia-smi 子进程)
+            let gpuListCache = [];
+            // 显卡下拉选项:自动/CPU + 各卡(来自 /gpu_status;不参与训练状态轮询)
+            const refreshDeviceOptions = async () => {
+                try {
+                    const data = await jsonFetch("/gpu_status");
+                    gpuListCache = data.gpu_status || [];
+                    const sel = document.querySelector("#trainDevice");
+                    const cur = sel.value;
+                    sel.innerHTML = `<option value="">自动</option><option value="cpu">CPU</option>` +
+                        gpuListCache.map(g => `<option value="${g.id}">GPU ${g.id}</option>`).join("");
+                    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+                } catch (e) { console.error(e); }
+            };
+            // 进度格式化:progress 是 0~1 原始小数,统一按百分比保留 5 位小数展示(不取整,
+            // 起步进度 0.27% 可见且不丢小数信息——demo 页展示完整数据)
+            const _fmtProgress = p => ((p ?? 0) * 100).toFixed(5) + "%";
+            // 最近一次成功渲染时是否存在活跃训练:失败自愈重试的依据(空闲期一次失败不无限重试)
+            let hadActiveTraining = false;
+            const refreshStatus = async () => {
+                let overviewHtml = "", listHtml = "<dt>训练列表</dt>";
+                try {
+                    const trainData = await jsonFetch("/train/status");
+                    const occ = trainData.gpu_occupancy || {};
+                    if (gpuListCache.length) {
+                        overviewHtml = "显卡占用: " + gpuListCache.map(g =>
+                            occ[String(g.id)] ? `GPU${g.id}[训练 ${esc(occ[String(g.id)])}]` : `GPU${g.id}[空闲]`
+                        ).join(" | ") + (trainData.cpu_busy ? " | CPU[训练中]" : "") + ` | 并行上限: ${gpuListCache.length} GPU + 1 CPU`;
+                    } else {
+                        // 卡列表未就绪(首刷竞态/30s 查询失败):退化为只渲染已占用项
+                        const occItems = Object.entries(occ).map(([id, exp]) => `GPU${id}[训练 ${esc(exp)}]`);
+                        if (trainData.cpu_busy) occItems.push("CPU[训练中]");
+                        if (occItems.length) overviewHtml = "显卡占用: " + occItems.join(" | ");
+                    }
+                    const items = trainData.trainings || [];
+                    if (!items.length) listHtml += "<dd>暂无训练记录</dd>";
+                    for (const t of items) {
+                        const running = t.status === "running" || t.status === "starting";
+                        listHtml += `<dd>${esc(t.exp)} | ${esc(t.version)} | ${t.gpu_id === null || t.gpu_id === undefined ? "CPU" : "GPU" + t.gpu_id} | (${esc(t.status)}) epoch ${t.epoch ?? "-"}/${t.total_epochs ?? "-"} 进度 ${_fmtProgress(t.progress)}` +
+                            (t.message ? `<br />${esc(t.message)}` : "") +
+                            (t.status === "finished"
+                                ? ["output", "last", "best"].filter(k => t[k]).map(k => `<br />${k}: ${esc(t[k])}`).join("")
+                                : "") +
+                            (running ? ` <a href="javascript:;" data-stop-exp="${esc(t.exp)}">[中止]</a>` : "") + `</dd>`;
+                    }
+                    clearTimeout(statusTimer);
+                    hadActiveTraining = items.some(t => t.status === "running" || t.status === "starting");
+                    if (hadActiveTraining) {
+                        statusTimer = setTimeout(refreshStatus, 2000);
+                    }
+                } catch (error) {
+                    overviewHtml = "状态获取失败: " + esc(error.toString());
+                    // 自愈:上次成功渲染有活跃训练 -> 5s 慢速重试(网络抖动/服务优雅重启不永久冻结轮询);
+                    // 本就无活跃训练 -> 不重试(避免空闲期无限轮询),手动"刷新状态"可恢复
+                    clearTimeout(statusTimer);
+                    if (hadActiveTraining) {
+                        statusTimer = setTimeout(refreshStatus, 5000);
+                    }
+                } finally {
+                    document.querySelector("#trainGpuOverview").innerHTML = overviewHtml;
+                    document.querySelector("#trainList").innerHTML = listHtml;
+                }
+            };
+            document.querySelector("#trainStatusRefresh").addEventListener("click", refreshStatus);
+            document.querySelector("#trainPresetCoco128").addEventListener("click", () => {
+                document.querySelector("#trainVersion").value = "v8";
+                document.querySelector("#trainModel").value = "yolov8n.pt";
+                document.querySelector("#trainData").value = "/docker-data-yolo/train_data/coco128/coco128.yaml";
+                document.querySelector("#trainEpochs").value = 10;
+            });
+            document.querySelector("#trainList").addEventListener("click", async e => {
+                const exp = e.target?.dataset?.stopExp;
+                if (!exp || !confirm(`确认中止训练 ${exp} 吗?`)) return;
+                try { await fetch(`/train/stop/${exp}`, { method: "post" }); } catch (err) { alert(err.toString()); }
+                refreshStatus();
+            });
+            document.querySelector("#trainStart").addEventListener("click", async () => {
+                if (!confirm("确认开始训练吗?")) return;
+                const params = {
+                    batch: parseInt(document.querySelector("#trainBatch").value) || 16,
+                    imgsz: parseInt(document.querySelector("#trainImgsz").value) || 640,
+                };
+                params.amp = document.querySelector("#trainAmp").checked;  // 显式传 bool:勾选 true,取消 false
+                const device = document.querySelector("#trainDevice").value;
+                if (device) params.device = device;
+                try {
+                    const res = await fetch("/train/start", {
+                        method: "post", headers: { "content-type": "application/json" },
+                        body: JSON.stringify({
+                            version: document.querySelector("#trainVersion").value,
+                            model: document.querySelector("#trainModel").value,
+                            data: document.querySelector("#trainData").value,
+                            epochs: parseInt(document.querySelector("#trainEpochs").value) || 10,
+                            params,
+                        })
+                    });
+                    const res_data = await res.json();
+                    if (res.status !== 200 || !res_data?.success) throw res_data?.errMsg ?? `请求错误:${res.status}`;
+                    alert(`训练已启动: ${res_data.data.exp} (${res_data.data.gpu_id === null ? "CPU" : "GPU " + res_data.data.gpu_id})`);
+                } catch (error) { alert(error.toString()); }
+                refreshStatus();
+            });
+            refreshDeviceOptions();
+            refreshStatus();
+            setInterval(refreshDeviceOptions, 30000);
+        })();
+    </script>
+    <footer style="margin-top: 24px; padding: 12px 10px; text-align: center; color: #777; font-size: 13px; border-top: 1px solid #ddd;">
+        <span>© 2026 YoloSub · AGPL-3.0 ·</span>
+        <!-- AGPL §13 源码入口(规格 §6.6 R3,UI 已授权):指向发布 tag,每次发版随发布更新 -->
+        <a href="https://github.com/wanweitujie/yolosub/tree/v1.0.0" target="_blank" rel="noopener noreferrer" style="color: #777; text-decoration: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="vertical-align: -2px; margin-right: 3px;">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            源码
+        </a>
+    </footer>
+</body>
+</html>

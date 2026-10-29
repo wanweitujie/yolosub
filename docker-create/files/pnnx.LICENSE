@@ -1,0 +1,60 @@
+# pnnx 二进制许可说明
+
+本文件随附于 `docker-create/files/pnnx`(83,960,816 字节,无扩展名 ELF 可执行文件),
+用于 Docker 镜像构建时覆盖 pip 安装的 pnnx(`Dockerfile:64,91`)。
+
+## 来源与校验
+
+- 本地二进制:`docker-create/files/pnnx`
+- SHA-256:`d4e656177b78107cf5b6bb000c77d51c035925b7be08587e89e7b38630b1a34e`
+- 上游项目:Tencent/ncnn 的 `tools/pnnx`
+- 上游地址:https://github.com/Tencent/ncnn/tree/master/tools/pnnx
+- PyPI 发行包:`pnnx==20251119`(构建时以该版本 wheel 覆盖安装)
+- 许可判定来源:PyPI wheel `pnnx-20251119.dist-info/METADATA`
+  - `License: BSD-3`
+  - `Classifier: License :: OSI Approved :: BSD License`
+  - Author: nihui (nihuini@tencent.com)
+
+## 许可
+
+pnnx 属于 Tencent/ncnn 项目的一部分(`tools/pnnx`),随 ncnn 整体以
+**BSD 3-Clause License(BSD-3-Clause)** 授权;ncnn 根 LICENSE.txt 声明
+`Copyright (C) 2017 Tencent. All rights reserved.`。全文如下:
+
+```
+BSD 3-Clause License
+
+Copyright (C) 2017 Tencent. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+```
+
+## 免责声明
+
+本二进制由上游 `pnnx==20251119` PyPI wheel 随附文件原样收录(未修改),
+用于模型导出功能。版权与许可归属 Tencent/ncnn 项目及其作者,与 YoloSub 项目许可无关。
+如上游许可或发行渠道发生变化,请以 https://github.com/Tencent/ncnn 为准。
